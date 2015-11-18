@@ -50,12 +50,12 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
 
 	_ "github.com/cockroachdb/cockroach/sql/driver"
-	"github.com/cockroachdb/cockroach/util/log"
 	"github.com/montanaflynn/stats"
 )
 
@@ -109,7 +109,7 @@ func (s *statistics) report() {
 		// The stats functions return an error only when the input is empty.
 		mean, _ := stats.Mean(writeTimes)
 		stddev, _ := stats.StandardDeviation(writeTimes)
-		log.Infof("wrote %d messages, latency mean=%s, stddev=%s",
+		log.Printf("wrote %d messages, latency mean=%s, stddev=%s",
 			len(writeTimes), time.Duration(mean), time.Duration(stddev))
 	}
 }
@@ -125,7 +125,7 @@ func (w writer) run() {
 	defer w.wg.Done()
 	for {
 		if err := w.writeMessage(); err != nil {
-			log.Errorf("error writing message: %s", err)
+			log.Printf("error writing message: %s", err)
 		}
 	}
 }
@@ -195,8 +195,7 @@ func main() {
 	flag.Parse()
 
 	if dbAddr == "" {
-		log.Errorf("--db-url flag is required")
-		return
+		log.Fatal("--db-url flag is required")
 	}
 	db, err := sql.Open(dbDriver, dbAddr)
 	if err != nil {
